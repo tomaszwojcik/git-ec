@@ -24,14 +24,6 @@ void GitStatusParser::parse() {
     parseNewFiles();
     parseModifiedFiles();
     parseUntrackedFiles();
-    //debug
-    cout << *branch << endl;
-    cout << "---" << endl;
-    vector<string*> *v = &untracked_files; 
-    vector<string*>::iterator it;
-    for (it = v->begin(); it != v->end(); it++) {
-        cerr << **it << endl;
-    }
 }
 
 void GitStatusParser::load() {

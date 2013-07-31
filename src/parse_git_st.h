@@ -9,7 +9,7 @@ const int PIPE_LINE_BUFFER_SIZE = 256;
 class GitStatusParser {
     std::vector<std::string*> pipe_buffer;
 
-    std::string* branch;
+    std::string branch;
     std::vector<std::string*> new_files;
     std::vector<std::string*> modified_files;
     std::vector<std::string*> untracked_files;
@@ -20,10 +20,10 @@ class GitStatusParser {
     ~GitStatusParser();
     void parse();
 
-    std::string* getBranch() { return branch; }
-    std::vector<std::string*> getNewFiles() { return new_files; }
-    std::vector<std::string*> getModifiedFiles() { return modified_files; }
-    std::vector<std::string*> getUntrackedFiles() { return untracked_files; }
+    std::string getBranch() { return branch; }
+    std::vector<std::string*>* getNewFiles() { return &new_files; }
+    std::vector<std::string*>* getModifiedFiles() { return &modified_files; }
+    std::vector<std::string*>* getUntrackedFiles() { return &untracked_files; }
 
     private:
 
