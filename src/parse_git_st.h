@@ -20,6 +20,11 @@ class GitStatusParser {
     ~GitStatusParser();
     void parse();
 
+    std::string* getBranch() { return branch; }
+    std::vector<std::string*> getNewFiles() { return new_files; }
+    std::vector<std::string*> getModifiedFiles() { return modified_files; }
+    std::vector<std::string*> getUntrackedFiles() { return untracked_files; }
+
     private:
 
     void load();
