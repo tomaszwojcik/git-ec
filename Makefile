@@ -1,13 +1,11 @@
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := 
-CC_FLAGS := 
 
 git-cc: $(OBJ_FILES)
-	   g++ $(LD_FLAGS) -o $@ $^
+	   g++ -o $@ $^ -lncurses
 
 obj/%.o: src/%.cpp
-	   g++ $(CC_FLAGS) -c -o $@ $<
+	   g++ -c -o $@ $<
 
 CC_FLAGS += -MMD
 -include $(OBJFILES:.o=.d)
