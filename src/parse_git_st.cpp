@@ -50,7 +50,7 @@ void GitStatusParser::parseBranch() {
     vector<string*>::iterator it = pipe_buffer.begin();
     while (it != pipe_buffer.end()) {
         if (regex::isBranchHeader(*it)) {
-            branch = regex::getBranch(*it);
+            branch = *regex::getBranch(*it);
             pipe_buffer.erase(it);
             return;
         } else {
