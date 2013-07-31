@@ -15,20 +15,21 @@ GitStatusParser::GitStatusParser() {
 GitStatusParser::~GitStatusParser() {
     pipe_buffer.clear();
     new_files.clear();
+    modified_files.clear();
 }
 
 void GitStatusParser::parse() {
     load();
     parseBranch();
     parseNewFiles();
-
+    parseModifiedFiles();
     //debug
     cout << *branch << endl;
     cout << "---" << endl;
-    vector<string*> v = new_files; 
+    vector<string*> *v = &modified_files; 
     vector<string*>::iterator it;
-    for (it = v.begin(); it != v.end(); it++) {
-        cout << **it << endl;
+    for (it = v->begin(); it != v->end(); it++) {
+        cerr << **it << endl;
     }
 }
 
@@ -53,22 +54,38 @@ void GitStatusParser::load() {
 //TODO create a method to iterate over pipe buffer and pass specific methods for parsing as an argument
 
 void GitStatusParser::parseBranch() {
-    vector<string*>::iterator it;
-    for (it = pipe_buffer.begin(); it != pipe_buffer.end(); it++) {
+    vector<string*>::iterator it = pipe_buffer.begin();
+    while (it != pipe_buffer.end()) {
         if (regex::isBranchHeader(*it)) {
             branch = regex::getBranch(*it);
             pipe_buffer.erase(it);
             return;
+        } else {
+            it++;
         }
     }
 }
 
 void GitStatusParser::parseNewFiles() {
-    vector<string*>::iterator it;
-    for (it = pipe_buffer.begin(); it != pipe_buffer.end(); it++) {
+    vector<string*>::iterator it = pipe_buffer.begin();
+    while (it != pipe_buffer.end()) {
         if (regex::isNewFile(*it)) {
             new_files.push_back(regex::getNewFile(*it));
             pipe_buffer.erase(it);
+        } else {
+            it++;
         }
     }
+}
+
+void GitStatusParser::parseModifiedFiles() {
+    vector<string*>::iterator it = pipe_buffer.begin();
+    while (it != pipe_buffer.end()) {
+        if (regex::isModifiedFile(*it)) {
+            modified_files.push_back(regex::getModifiedFile(*it));
+            pipe_buffer.erase(it);
+        } else { 
+            it++;
+        }
+    } 
 }

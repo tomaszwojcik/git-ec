@@ -9,6 +9,8 @@ namespace regex {
     std::string *getBranch(std::string *git_st_line);
     bool isNewFile(std::string* git_st_line);
     std::string* getNewFile(std::string* git_st_line);
+    bool isModifiedFile(std::string* git_st_line);
+    std::string* getModifiedFile(std::string* git_st_line);
 }
 
 #endif
