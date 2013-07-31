@@ -23,10 +23,11 @@ void GitStatusParser::parse() {
     parseBranch();
     parseNewFiles();
     parseModifiedFiles();
+    parseUntrackedFiles();
     //debug
     cout << *branch << endl;
     cout << "---" << endl;
-    vector<string*> *v = &modified_files; 
+    vector<string*> *v = &untracked_files; 
     vector<string*>::iterator it;
     for (it = v->begin(); it != v->end(); it++) {
         cerr << **it << endl;
@@ -88,4 +89,17 @@ void GitStatusParser::parseModifiedFiles() {
             it++;
         }
     } 
+}
+
+void GitStatusParser::parseUntrackedFiles() {
+    vector<string*>::iterator it = pipe_buffer.begin();
+    while (it != pipe_buffer.end()) {
+        if (regex::isUntrackedFile(*it)) {
+            untracked_files.push_back(regex::getUntrackedFile(*it));
+            pipe_buffer.erase(it);
+        } else { 
+            it++;
+        }
+    } 
+    
 }

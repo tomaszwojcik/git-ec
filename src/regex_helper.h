@@ -11,6 +11,8 @@ namespace regex {
     std::string* getNewFile(std::string* git_st_line);
     bool isModifiedFile(std::string* git_st_line);
     std::string* getModifiedFile(std::string* git_st_line);
+    bool isUntrackedFile(std::string* git_st_line);
+    std::string* getUntrackedFile(std::string* git_st_line);
 }
 
 #endif

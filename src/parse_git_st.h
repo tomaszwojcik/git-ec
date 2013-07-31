@@ -12,6 +12,7 @@ class GitStatusParser {
     std::string* branch;
     std::vector<std::string*> new_files;
     std::vector<std::string*> modified_files;
+    std::vector<std::string*> untracked_files;
 
     public:
 
@@ -25,6 +26,7 @@ class GitStatusParser {
     void parseBranch();
     void parseNewFiles();
     void parseModifiedFiles();
+    void parseUntrackedFiles();
 
 };
 
