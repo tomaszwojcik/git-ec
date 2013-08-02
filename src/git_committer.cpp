@@ -26,6 +26,11 @@ void GitCommitter::removeFile(string* filename) {
     }
 }
 
+void GitCommitter::commit() {
+    gitAdd();
+    system("git commit");
+}
+
 void GitCommitter::commit(string message) {
     gitAdd();
     char message_delimiter = '\'';

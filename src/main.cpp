@@ -64,18 +64,56 @@ MENU* init_all_files_menu(GitStatusParser* git_status_parser) {
             items[index] = new_item((untracked_files->at(i))->c_str(), "(untracked)");
     }
     items[index] = 0;
-    return new_menu(items);
+    MENU* menu = new_menu(items);
+    menu_opts_off(menu, O_ONEVALUE);
+    return menu;
 }
 
+string* menu_item_to_string(ITEM* item) {
+    const char* name = item->name.str;
+    return new string(name);
+}
+
+bool is_selected_any_file(MENU* menu) {
+    ITEM** items = menu_items(menu);
+    int count = item_count(menu);
+    for (int i = 0; i < count; i++) {
+        if (item_value(items[i]) == TRUE) {
+            return true;
+        }
+    }
+}
+
+void add_selected_files(MENU* menu, GitCommitter* git_committer) {
+    ITEM** items = menu_items(menu);
+    int count = item_count(menu);
+    for (int i = 0; i < count; i++) {
+        if (item_value(items[i]) == TRUE) {
+            string* filename = menu_item_to_string(items[i]);
+            git_committer->addFile(filename);
+        }
+    }
+}
+
+//TODO add ctrl-c handling (cleanup)
 int main(int argc, char** argv) {
     initscr();
+    start_color();
     keypad(stdscr, TRUE);
     noecho();
 
     GitStatusParser git_st_parser;
+    GitCommitter git_committer;
     git_st_parser.parse();
 
     MENU* files_menu = init_all_files_menu(&git_st_parser);
+
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(3, COLOR_BLUE, COLOR_BLACK);
+
+    set_menu_fore(files_menu, COLOR_PAIR(1) | A_REVERSE);
+    set_menu_grey(files_menu, COLOR_PAIR(3) | A_REVERSE);
+
     move(5, 5);
     post_menu(files_menu);
     refresh();
@@ -86,19 +124,47 @@ int main(int argc, char** argv) {
         key = getch();
         switch (key) {
             case KEY_DOWN:
+            case 'j':
                 menu_driver(files_menu, REQ_DOWN_ITEM);
                 break;
 
             case KEY_UP:
+            case 'k':
                 menu_driver(files_menu, REQ_UP_ITEM);
                 break;
 
+            case KEY_PPAGE:
+                menu_driver(files_menu, REQ_SCR_UPAGE);
+                break;
+
+            case KEY_NPAGE:
+                menu_driver(files_menu, REQ_SCR_DPAGE);
+                break;
+
+            case ' ':
+                menu_driver(files_menu, REQ_TOGGLE_ITEM);
+                break;
+
+            case 'c': 
+                if (is_selected_any_file(files_menu)) {
+                    add_selected_files(files_menu, &git_committer);
+                    free_menu(files_menu);
+                    endwin();
+                    git_committer.commit();
+                    return 0;
+                }
+                break;
+
+            case 'q':
             case 27: //ESC
                 done = true;
                 break;
         }
+        post_menu(files_menu);
         refresh();
     } while (!done);
+    free_menu(files_menu);
     endwin();
+    return 0;
 }
 

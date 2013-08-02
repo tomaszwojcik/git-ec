@@ -14,6 +14,7 @@ class GitCommitter {
 
         void addFile(std::string* filename);
         void removeFile(std::string* filename);
+        void commit();
         void commit(std::string message);
 
     private:
