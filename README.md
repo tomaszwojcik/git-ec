@@ -15,7 +15,7 @@ It calls system git commands (status, add, commit).
 
 ## Important notes
 
-git-cc is still in the development phase (ugly looks & code, memory leaks, no real error handling) - use it at your own risk.<br>
+git-ec is still in the development phase (ugly looks & code, memory leaks, no real error handling) - use it at your own risk.<br>
 
 #### Development
 
