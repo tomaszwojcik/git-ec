@@ -1,7 +1,7 @@
-git-cc
+git-ec
 ======
 
-git-cc aka "Git Commit Commander" is a simple terminal tool for selecting and committing multiple files (new, modified, unstaged).
+git-ec aka "Git Easy Commit" is a simple terminal tool for selecting and committing multiple files (new, modified, unstaged).
 It calls system git commands (status, add, commit). 
 
 #### Default keymap
