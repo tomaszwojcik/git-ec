@@ -1,7 +1,7 @@
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 
-git-cc: $(OBJ_FILES)
+git-ec: $(OBJ_FILES)
 	g++ -o $@ $^ -lncurses -lmenu
 
 obj/%.o: src/%.cpp
