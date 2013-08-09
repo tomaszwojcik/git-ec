@@ -1,4 +1,5 @@
 #include "regex_helper.h"
+#include "commons.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -9,7 +10,7 @@ using namespace std;
 const char *branch_header_pattern = "^#\\s*On branch\\s*";
 const char* new_files_pattern = "^#\\s*new file:\\s*";
 const char* modified_file_pattern = "^#\\s*modified:\\s*";
-const char* untracked_file_pattern = "^#\\s*[a-zA-Z0-9._/]+$";
+const char* untracked_file_pattern = "^#\\s*[a-zA-Z0-9._/\\-]+$";
 const char* indent_pattern = "^#\\s*";
 
 static bool initalized = false; 
@@ -21,9 +22,29 @@ static regex_t indent; //we will remove indent (using regex) from untracked file
 
 // Helper functions
 void compileRegex(regex_t *regex, const char *pattern) {
-    int result = regcomp(regex, pattern, REG_EXTENDED | REG_NEWLINE);
+    int result = regcomp(regex, pattern, REG_EXTENDED | REG_NEWLINE | REG_ENHANCED);
     if (result) {
-        cerr << "Failed to compile regular expression!" << endl;
+        cerr << "Failed to compile regular expression: \"";
+        switch (result) {
+            case REG_NOMATCH: cerr << "The regexec() function failed to match"; break;
+            case REG_BADPAT: cerr << "invalid regular expression"; break;
+            case REG_ECOLLATE: cerr << "invalid collating element"; break;
+            case REG_ECTYPE: cerr << "invalid character class"; break;
+            case REG_EESCAPE: cerr << "`\' applied to unescapable character"; break;
+            case REG_ESUBREG: cerr << "invalid backreference number"; break;
+            case REG_EBRACK: cerr << "brackets `[ ]' not balanced"; break;
+            case REG_EPAREN: cerr << "parentheses `( )' not balanced"; break;
+            case REG_EBRACE: cerr << "braces `{ }' not balanced"; break;
+            case REG_BADBR: cerr << "invalid repetition count(s) in `{ }'"; break;
+            case REG_ERANGE: cerr << "invalid character range in `[ ]'"; break;
+            case REG_ESPACE: cerr << "ran out of memory"; break;
+            case REG_BADRPT: cerr << "i`?', `*', or `+' operand invalid"; break;
+            case REG_EMPTY: cerr << "empty (sub)expression"; break;
+            case REG_ASSERT: cerr << "cannot happen - you found a bug"; break;
+            case REG_INVARG: cerr << "invalid argument, e.g. negative-length string"; break;
+            case REG_ILLSEQ: cerr << "iillegal byte sequence (bad multibyte character)"; break;
+        }
+        cerr << "\"." << ENDLINE;
         exit(1);
     }
 }

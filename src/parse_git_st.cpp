@@ -1,5 +1,6 @@
 #include "parse_git_st.h"
 #include "regex_helper.h"
+#include "commons.h"
 
 #include <iostream>
 #include <cstdio> 
@@ -30,7 +31,7 @@ void GitStatusParser::load() {
     //TODO rewrite this method from C + C++ to pure C++ style (and throw exception if necessary?).
     FILE *file = popen("git status", "r");
     if (!file) {
-        cerr << "IO error!" << endl;
+        cerr << "IO error!" << ENDLINE;
         exit(1);
     }
     int bytes;

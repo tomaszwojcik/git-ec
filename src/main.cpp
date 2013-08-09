@@ -41,18 +41,14 @@ void debug_commit_untracked_files() {
     git_committer.commit("git-cc \"test commit\"");
 }
 
-
-MENU* init_all_files_menu(GitStatusParser* git_status_parser) {
+MENU* init_all_files_menu(GitStatusParser* git_status_parser, WINDOW* window) {
     vector<string*>* new_files = git_status_parser->getNewFiles();
     vector<string*>* modified_files = git_status_parser->getModifiedFiles();
     vector<string*>* untracked_files = git_status_parser->getUntrackedFiles();
     int total_files = new_files->size() + modified_files->size() + untracked_files->size();
 
-    char buf[256];
-    sprintf(buf, "%d", total_files);
-    mvprintw(0, 40, buf);
-    
-            ITEM** items = new ITEM*[total_files  + 1]; //need 1 more space for null entry (end of menu)
+
+    ITEM** items = new ITEM*[total_files  + 1]; //need 1 more space for null entry (end of menu)
     int index = 0;
     for (int i = 0; i < new_files->size(); i++, index++) {
             items[index] = new_item((new_files->at(i))->c_str(), "(new)");
@@ -65,6 +61,7 @@ MENU* init_all_files_menu(GitStatusParser* git_status_parser) {
     }
     items[index] = 0;
     MENU* menu = new_menu(items);
+    set_menu_win(menu, window);
     menu_opts_off(menu, O_ONEVALUE);
     return menu;
 }
@@ -95,32 +92,72 @@ void add_selected_files(MENU* menu, GitCommitter* git_committer) {
     }
 }
 
+void draw_title_line() {
+    const char* title = "GIT EASY COMMIT";
+    int x, y;
+    attron(COLOR_PAIR(3) | A_REVERSE | A_BOLD);
+    getmaxyx(stdscr, y, x);
+    for (int i = 0; i <= x; i++) {
+        mvaddch(0, i, ' ');
+    }
+    mvprintw(0, (x / 2) - (strlen(title) / 2), title);
+    attroff(A_REVERSE | A_BOLD);
+}
+
+void draw_help() {
+    attron(COLOR_PAIR(1));
+    mvprintw(1, 1, "<up>, k - navigate up, <down>, j - navigate down");;
+    mvprintw(2, 1, "<space> - select/deselect file, c - commit selected file(s)");
+    mvprintw(3, 1, "<esc>, q - quit");
+
+    attron(A_BOLD);
+    mvprintw(5, 1, "All files");
+    attroff(A_BOLD);
+}
+
 //TODO add ctrl-c handling (cleanup)
 int main(int argc, char** argv) {
     initscr();
     start_color();
+
+
     keypad(stdscr, TRUE);
     noecho();
+    curs_set(0);;
 
     GitStatusParser git_st_parser;
     GitCommitter git_committer;
     git_st_parser.parse();
 
-    MENU* files_menu = init_all_files_menu(&git_st_parser);
+    int rows, cols;
+    int menu_y = 6;
 
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(3, COLOR_BLUE, COLOR_BLACK);
+    getmaxyx(stdscr, rows, cols);
+ 
+    int menu_height = (rows - menu_y) - 2;
+    if (menu_height < 2) {
+        menu_height = 2;
+    }
+    WINDOW* menu_window = newwin(menu_height, cols, 6, 0);
+    MENU* files_menu = init_all_files_menu(&git_st_parser, menu_window);
+    set_menu_format(files_menu, menu_height, 1);
 
-    set_menu_fore(files_menu, COLOR_PAIR(1) | A_REVERSE);
-    set_menu_grey(files_menu, COLOR_PAIR(3) | A_REVERSE);
+    init_pair(1, COLOR_WHITE, COLOR_BLACK);
+    init_pair(2, COLOR_CYAN, COLOR_BLACK);
+    init_pair(3, COLOR_GREEN, COLOR_BLACK);
 
-    move(5, 5);
+    set_menu_fore(files_menu, COLOR_PAIR(2) | A_REVERSE | A_BOLD);
+    set_menu_grey(files_menu, COLOR_PAIR(1) | A_REVERSE | A_BOLD);
+
     post_menu(files_menu);
     refresh();
+    wrefresh(menu_window);
 
     bool done = false;
     int key = 0;
     do {
+        draw_title_line();
+        draw_help();
         key = getch();
         switch (key) {
             case KEY_DOWN:
@@ -160,7 +197,7 @@ int main(int argc, char** argv) {
                 done = true;
                 break;
         }
-        post_menu(files_menu);
+        wrefresh(menu_window);
         refresh();
     } while (!done);
     free_menu(files_menu);
