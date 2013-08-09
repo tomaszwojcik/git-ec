@@ -86,7 +86,6 @@ WINDOW* menu_window;
 MENU* files_menu;
 GitStatusParser git_st_parser;
 GitCommitter git_committer;
-bool terminated = false;
 
 void init_git_parser() {
     try {
@@ -134,6 +133,11 @@ void cleanup() {
     endwin();
 }
 
+void handle_sigint(int params) {
+    cleanup();
+    exit(1);
+}
+
 //TODO add ctrl-c handling (cleanup)
 int main(int argc, char** argv) {
     init_git_parser();
@@ -142,6 +146,8 @@ int main(int argc, char** argv) {
     
     draw_title_line();
     draw_help();
+
+    signal(SIGINT, handle_sigint);
 
     bool done = false;
     int key = 0;
@@ -174,8 +180,7 @@ int main(int argc, char** argv) {
             case 'c': 
                 if (is_selected_any_file(files_menu)) {
                     add_selected_files(files_menu, &git_committer);
-                    free_menu(files_menu);
-                    endwin();
+                    cleanup();
                     git_committer.commit();
                     return 0;
                 }
@@ -189,8 +194,7 @@ int main(int argc, char** argv) {
         wrefresh(menu_window);
         refresh();
     } while (!done);
-    free_menu(files_menu);
-    endwin();
+    cleanup();
     return 0;
 }
 
