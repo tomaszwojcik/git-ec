@@ -4,6 +4,8 @@ git-ec
 git-ec aka "Git Easy Commit" is a simple terminal tool for selecting and committing multiple files (new, modified, unstaged).
 It calls system git commands (status, add, commit). 
 
+![alt git-ec](http://i.imgur.com/8E10ONk.png)
+
 #### Default keymap
 `<up>``k`navigate up<br>
 `<down>``j` navigate down<br>
