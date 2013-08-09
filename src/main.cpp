@@ -76,60 +76,77 @@ void draw_help() {
     mvprintw(1, 1, "<up>, k - navigate up, <down>, j - navigate down");;
     mvprintw(2, 1, "<space> - select/deselect file, c - commit selected file(s)");
     mvprintw(3, 1, "<esc>, q - quit");
-
     attron(A_BOLD);
     mvprintw(5, 1, "All files");
     attroff(A_BOLD);
 }
 
-//TODO add ctrl-c handling (cleanup)
-int main(int argc, char** argv) {
-    GitStatusParser git_st_parser;
+// Global variables
+WINDOW* menu_window;
+MENU* files_menu;
+GitStatusParser git_st_parser;
+GitCommitter git_committer;
+bool terminated = false;
+
+void init_git_parser() {
     try {
         git_st_parser.parse();
     } catch (NotAGitRepositoryException e) {
         cerr << "Missing git repository! Use git-ec in the git repository or any of it's subdirectories." << endl;
         cerr.flush();
-        return 1;
+        exit(1);
     }
-    
-    initscr();
-    start_color();
+}
 
+void init_curses() {
+    initscr();
     keypad(stdscr, TRUE);
+    start_color();
     noecho();
     curs_set(0);
+    init_pair(1, COLOR_WHITE, COLOR_BLACK);
+    init_pair(2, COLOR_CYAN, COLOR_BLACK);
+    init_pair(3, COLOR_GREEN, COLOR_BLACK);
+}
 
-    GitCommitter git_committer;
+void init_menu_window() {
     int rows, cols;
     int menu_y = 6;
-
     getmaxyx(stdscr, rows, cols);
- 
     int menu_height = (rows - menu_y) - 2;
     if (menu_height < 2) {
         menu_height = 2;
     }
-    WINDOW* menu_window = newwin(menu_height, cols, 6, 0);
-    MENU* files_menu = init_all_files_menu(&git_st_parser, menu_window);
+    menu_window = newwin(menu_height, cols, 6, 0);
+    files_menu = init_all_files_menu(&git_st_parser, menu_window);
     set_menu_format(files_menu, menu_height, 1);
-
-    init_pair(1, COLOR_WHITE, COLOR_BLACK);
-    init_pair(2, COLOR_CYAN, COLOR_BLACK);
-    init_pair(3, COLOR_GREEN, COLOR_BLACK);
-
     set_menu_fore(files_menu, COLOR_PAIR(2) | A_REVERSE | A_BOLD);
     set_menu_grey(files_menu, COLOR_PAIR(1) | A_REVERSE | A_BOLD);
-
     post_menu(files_menu);
     refresh();
     wrefresh(menu_window);
+}
+
+void cleanup() {
+    if (files_menu) {
+        free_menu(files_menu);
+    }
+    endwin();
+}
+
+//TODO add ctrl-c handling (cleanup)
+int main(int argc, char** argv) {
+    init_git_parser();
+    init_curses();
+    init_menu_window();
+    
+    draw_title_line();
+    draw_help();
 
     bool done = false;
     int key = 0;
+
     do {
-        draw_title_line();
-        draw_help();
         key = getch();
         switch (key) {
             case KEY_DOWN:
