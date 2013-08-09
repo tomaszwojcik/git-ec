@@ -94,6 +94,9 @@ void init_git_parser() {
         cerr << "Missing git repository! Use git-ec in the git repository or any of it's subdirectories." << endl;
         cerr.flush();
         exit(1);
+    } catch (NothingToCommitException e) {
+        cerr << "No new/modified/untracked files available for commit." << endl;
+        exit(1);
     }
 }
 

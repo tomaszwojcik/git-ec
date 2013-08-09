@@ -1,6 +1,5 @@
 #include "parse_git_st.h"
 #include "regex_helper.h"
-#include "commons.h"
 #include "exceptions.h"
 
 #include <iostream>
@@ -32,7 +31,7 @@ void GitStatusParser::load() {
     //TODO rewrite this method from C + C++ to pure C++ style (and throw exception if necessary?).
     FILE *file = popen("git status 2>&1", "r"); //We need a stderr redirect for missing git repository warning
     if (!file) {
-        cerr << "IO error!" << ENDLINE;
+        cerr << "IO error!" << endl;
         exit(1);
     }
     int bytes;
@@ -51,12 +50,27 @@ void GitStatusParser::load() {
     while (fgets(buffer, sizeof(buffer), file) != 0) {
         buffer[strlen(buffer) - 1] = '\0'; // we don't need '\n' at the end 
         string* str = new string(buffer);
-        pipe_buffer.push_back(str);
+        if (str->empty()) {
+            delete str;
+        } else {
+            pipe_buffer.push_back(str);
+        }
     }
     pclose(file);
+
+    vector<string*>::iterator it = pipe_buffer.begin();
+    while (it != pipe_buffer.end()) {
+        if (regex::isNothingToCommit(*it)) {
+            pipe_buffer.erase(it);
+            throw NothingToCommitException();
+        } else {
+            it++;
+        }
+    }
 }
 
 //TODO create a method to iterate over pipe buffer and pass specific methods for parsing as an argument
+
 
 void GitStatusParser::parseBranch() {
     vector<string*>::iterator it = pipe_buffer.begin();

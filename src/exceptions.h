@@ -6,4 +6,7 @@
 class NotAGitRepositoryException : public std::exception { 
 };
 
+class NothingToCommitException : public std::exception {
+};
+
 #endif

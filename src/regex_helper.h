@@ -6,6 +6,7 @@
 namespace regex {
     void initialize();
     bool isNotAGitRepository(std::string *git_st_line);
+    bool isNothingToCommit(std::string *git_st_line);
     bool isBranchHeader(std::string *git_st_line);
     std::string *getBranch(std::string *git_st_line);
     bool isNewFile(std::string* git_st_line);

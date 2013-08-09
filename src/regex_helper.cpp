@@ -6,6 +6,7 @@
 using namespace std;
 
 const char* not_a_git_repository_pattern = "fatal";
+const char* nothing_to_commit_pattern ="^nothing to commit";
 const char *branch_header_pattern = "^#\\s*On branch\\s*";
 const char* new_files_pattern = "^#\\s*new file:\\s*";
 const char* modified_file_pattern = "^#\\s*modified:\\s*";
@@ -14,6 +15,7 @@ const char* indent_pattern = "^#\\s*";
 
 static bool initalized = false;
 static regex_t not_a_git_repository;
+static regex_t nothing_to_commit;
 static regex_t branch_header;
 static regex_t new_file;
 static regex_t modified_file;
@@ -67,6 +69,7 @@ string* getStringWithoutMatch(regex_t *regex, string* git_st_line) {
  void regex::initialize() {
     if (!initalized) {
         compileRegex(&not_a_git_repository, not_a_git_repository_pattern, true);
+        compileRegex(&nothing_to_commit, nothing_to_commit_pattern, true);
         compileRegex(&branch_header, branch_header_pattern);
         compileRegex(&new_file, new_files_pattern);
         compileRegex(&modified_file, modified_file_pattern);
@@ -77,6 +80,10 @@ string* getStringWithoutMatch(regex_t *regex, string* git_st_line) {
 
 bool regex::isNotAGitRepository(string* git_st_line) {
     return 0 == regexec(&not_a_git_repository, git_st_line->c_str(), 0, 0, 0);
+}
+
+bool regex::isNothingToCommit(string* git_st_line) {
+    return 0 == regexec(&nothing_to_commit, git_st_line->c_str(), 0, 0, 0);
 }
 
 bool regex::isBranchHeader(string* git_st_line) {
