@@ -1,19 +1,19 @@
 #include "regex_helper.h"
-#include "commons.h"
-
 #include <iostream>
 #include <cstdlib>
 #include <regex.h>
 
 using namespace std;
 
+const char* not_a_git_repository_pattern = "fatal";
 const char *branch_header_pattern = "^#\\s*On branch\\s*";
 const char* new_files_pattern = "^#\\s*new file:\\s*";
 const char* modified_file_pattern = "^#\\s*modified:\\s*";
 const char* untracked_file_pattern = "^#\\s*[a-zA-Z0-9._/\\-]+$";
 const char* indent_pattern = "^#\\s*";
 
-static bool initalized = false; 
+static bool initalized = false;
+static regex_t not_a_git_repository;
 static regex_t branch_header;
 static regex_t new_file;
 static regex_t modified_file;
@@ -21,8 +21,12 @@ static regex_t untracked_file; //regex for whole line (including filename)
 static regex_t indent; //we will remove indent (using regex) from untracked file
 
 // Helper functions
-void compileRegex(regex_t *regex, const char *pattern) {
-    int result = regcomp(regex, pattern, REG_EXTENDED | REG_NEWLINE | REG_ENHANCED);
+void compileRegex(regex_t *regex, const char *pattern, bool ignoreCase = false) {
+    int flags = REG_EXTENDED | REG_NEWLINE | REG_ENHANCED;
+    if (ignoreCase) {
+        flags |= REG_ICASE;
+    }
+    int result = regcomp(regex, pattern, flags);
     if (result) {
         cerr << "Failed to compile regular expression: \"";
         switch (result) {
@@ -44,7 +48,7 @@ void compileRegex(regex_t *regex, const char *pattern) {
             case REG_INVARG: cerr << "invalid argument, e.g. negative-length string"; break;
             case REG_ILLSEQ: cerr << "iillegal byte sequence (bad multibyte character)"; break;
         }
-        cerr << "\"." << ENDLINE;
+        cerr << "\"." << endl;
         exit(1);
     }
 }
@@ -62,12 +66,17 @@ string* getStringWithoutMatch(regex_t *regex, string* git_st_line) {
 // Actual functions
  void regex::initialize() {
     if (!initalized) {
+        compileRegex(&not_a_git_repository, not_a_git_repository_pattern, true);
         compileRegex(&branch_header, branch_header_pattern);
         compileRegex(&new_file, new_files_pattern);
         compileRegex(&modified_file, modified_file_pattern);
         compileRegex(&untracked_file, untracked_file_pattern);
         compileRegex(&indent, indent_pattern);
     }
+}
+
+bool regex::isNotAGitRepository(string* git_st_line) {
+    return 0 == regexec(&not_a_git_repository, git_st_line->c_str(), 0, 0, 0);
 }
 
 bool regex::isBranchHeader(string* git_st_line) {
